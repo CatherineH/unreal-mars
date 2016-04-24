@@ -26,6 +26,7 @@ def get_location(x=20000, y=5000):
     """
     grab the altimeter and texture tiles at location on mars x, y
     """
+    high_resolution = False
     [cell_x, cell_y] = location_to_scale_alt(x, y)
     target_filename = get_altimeter_filename(cell_x, cell_y)
     #first, check to make sure the image isn't already in the cache
@@ -35,16 +36,24 @@ def get_location(x=20000, y=5000):
         print(url)
         urllib.urlretrieve(url, filename=target_filename)
     texture_ext = 'bmp'
-    # get the higher resolution viking images
-    for sub_cell_x in range(cell_x*8, (cell_x+1)*8+1):
-        for sub_cell_y in range(cell_y*8, (cell_y+1)*8+1):
-            target_filename = get_texture_filename(cell_x, cell_y, sub_cell_x, sub_cell_y)
+    if high_resolution:
+        # get the higher resolution viking images
+        for sub_cell_x in range(cell_x*8, (cell_x+1)*8+1):
+            for sub_cell_y in range(cell_y*8, (cell_y+1)*8+1):
+                target_filename = get_texture_filename(cell_x, cell_y, sub_cell_x, sub_cell_y)
 
-            if not os.path.isfile(target_filename):
-                url = 'https://api.nasa.gov/mars-wmts/catalog/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/' \
-                    'default028mm/8/'+str(sub_cell_y)+'/'+str(sub_cell_x)+'.png'
-                print(url)
-                urllib.urlretrieve(url, filename=target_filename)
+                if not os.path.isfile(target_filename):
+                    url = 'https://api.nasa.gov/mars-wmts/catalog/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/' \
+                        'default028mm/8/'+str(sub_cell_y)+'/'+str(sub_cell_x)+'.png'
+                    print(url)
+                    urllib.urlretrieve(url, filename=target_filename)
+    else:
+        target_filename = get_stitched_filename(cell_x, cell_y, 'png')
+        if not os.path.isfile(target_filename):
+            url = 'https://api.nasa.gov/mars-wmts/catalog/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/' \
+                'default028mm/5/'+str(cell_y)+'/'+str(cell_x)+'.png'
+            print(url)
+            urllib.urlretrieve(url, filename=target_filename)
 
     target_filename = get_stitched_filename(cell_x, cell_y, texture_ext)
     if not os.path.isfile(target_filename):
@@ -96,6 +105,21 @@ def get_raw(x=20000, y=5000):
     return out_data
 
 
+def get_raw_colors(x=20000, y=5000, component=0):
+    """
+    Get the raw bytes from the altimeter data
+    :param x: the x location on Mars, in km
+    :param y: the y location on Mars, in km
+    :return:
+    """
+    get_location(x, y)
+    [cell_x, cell_y] = location_to_scale_alt(x, y)
+    filename = get_stitched_filename(cell_x, cell_y, 'png')
+    sub_image = Image.open(filename)
+    out_data = [chr(tup[component]) for tup in list(sub_image.getdata())]
+    return out_data
+
+
 def compress_data(in_data):
     """
     since the elevations will be pretty flat, we should compress the data
@@ -133,7 +157,7 @@ def generate_test():
 
     for i in range(out_image.size[0]):    # for every pixel:
         for j in range(out_image.size[1]):
-            if i <10 or j < 10 or i>245 or j> 245:
+            if i < 10 or j < 10 or i > 245 or j > 245:
                 pixels[i,j] = 37
             else:
                 pixels[i,j] = 50
@@ -141,3 +165,4 @@ def generate_test():
     f_out = open('test_image.bmp', 'w+')
     out_image.show()
     out_image.save(f_out, 'bmp')
+

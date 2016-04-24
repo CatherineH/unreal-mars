@@ -27,7 +27,8 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Materials)
 		UProceduralMeshComponent* mesh;
 
-	void GenerateLandscape(TArray<uint8> InPoints, const int xdim, const int ydim, const int grid_spacing, TArray<FProceduralMeshTriangle>& OutTriangles);
-	TArray<uint8> GetTile(const FString SocketName, const FString& ip, const int32 port, const int x_loc, const int y_loc);
+	void GenerateLandscape(TArray<uint8> InPoints, TArray<uint8> InR, TArray<uint8> InG, TArray<uint8> InB, const int xdim, const int ydim, const int grid_spacing, TArray<FProceduralMeshTriangle>& OutTriangles);
+	TArray<uint8> GetTile(const FString SocketName, const FString& ip, const int32 port, const int x_loc, const int y_loc, FString _data_type);
+	TArray<uint8> AProceduralLandscape::Decompress(TArray<uint8> in_data, const int32 grid_size);
 
 };
