@@ -9,10 +9,6 @@ HOST = '127.0.0.1'
 PORT = 8890
 
 
-def response(key):
-    return 'Recieved'
-
-
 def handler(clientsock, addr):
     while 1:
         data = clientsock.recv(BUFF)
@@ -24,6 +20,7 @@ def handler(clientsock, addr):
             y = int(loc[1])
             return_data = "".join(compress_data(get_raw(x, y)))
             print("size of data sent: "+str(len(return_data)))
+            print("last value is: "+str(ord(return_data[-1])))
             clientsock.sendall(return_data)
         if not data: break
 

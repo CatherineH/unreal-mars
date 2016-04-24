@@ -5,14 +5,6 @@ import urllib
 from PIL import Image
 
 
-scale = 1.0907329542893544E+06
-width = 512
-height = 256
-pix_width = 256
-mars_radius = 20734
-my_scale = (width*pix_width)/mars_radius
-
-
 def stitch_raw(cell_x, cell_y):
     # create a new blank image
     stitched_image = Image.new('RGBA', (256*8, 256*8))
@@ -103,6 +95,7 @@ def get_raw(x=20000, y=5000):
     out_data = [chr(tup[0]) for tup in list(sub_image.getdata())]
     return out_data
 
+
 def compress_data(in_data):
     """
     since the elevations will be pretty flat, we should compress the data
@@ -113,6 +106,8 @@ def compress_data(in_data):
     count = 1
     last_char = None
     for i in range(len(in_data)):
+        if ord(in_data[i]) > 250:
+            print("in compress data, index "+str(i)+" is: "+str(ord(in_data[i])))
         if in_data[i] == last_char and count < 255:
             count += 1
         elif count > 254:
@@ -127,11 +122,22 @@ def compress_data(in_data):
             count = 1
     return out_data
 
-raw = get_raw(1000, 7000)
-compressed = compress_data(raw)
-print(len(compressed))
-print(compressed)
-for i in range(0, 10):
-    print(str(i)+" "+str(ord(compressed[i])))
 
+def generate_test():
+    """
+    Generate a test image to verify the mesh server
+    :return:
+    """
+    out_image = Image.new('L', (256, 256))
+    pixels = out_image.load() # create the pixel map
 
+    for i in range(out_image.size[0]):    # for every pixel:
+        for j in range(out_image.size[1]):
+            if i <10 or j < 10 or i>245 or j> 245:
+                pixels[i,j] = 37
+            else:
+                pixels[i,j] = 50
+
+    f_out = open('test_image.bmp', 'w+')
+    out_image.show()
+    out_image.save(f_out, 'bmp')
