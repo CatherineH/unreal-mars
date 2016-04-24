@@ -1,15 +1,17 @@
 // UE4 Procedural Mesh Generation from the Epic Wiki (https://wiki.unrealengine.com/Procedural_Mesh_Generation)
 //
 // A landscape object
-#using <mscorlib.dll>
 #include "ProceduralMesh.h"
 #include "ProceduralLandscape.h"
+#using namespace System;
+#using namespace System::IO;
+#define BUFSIZE 4096
 
 
 AProceduralLandscape::AProceduralLandscape()
 {
 	mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralLandscape"));
-	String tile_cache = GetEnvironmentVariable();
+	
 	// Apply a material
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> Material(TEXT("/Game/Materials/BaseColor.BaseColor"));
 	mesh->SetMaterial(0, Material.Object);
@@ -48,6 +50,8 @@ AProceduralLandscape::AProceduralLandscape()
 // Generate a lathe by rotating the given polyline
 void AProceduralLandscape::GenerateLandscape(int InPoints[4][4], const int xdim, const int ydim, const int grid_spacing, TArray<FProceduralMeshTriangle>& OutTriangles)
 {
+	String^ tile_cache = "textfile.txt";
+	UE_LOG(LogClass, Log, TEXT("AProceduralLandscape::Landscape tile_cache %s"), tile_cache);
 	UE_LOG(LogClass, Log, TEXT("AProceduralLandscape::Landscape DIMS %d %d"), xdim, ydim);
 	FProceduralMeshTriangle tri;
 	static const FColor Red(255, 51, 51);
